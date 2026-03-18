@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nexus — File Index</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --cerulean: #3E78B2;
+      --cobalt:   #004BA8;
+      --iron:     #4A525A;
+      --shadow:   #24272B;
+      --black:    #07070A;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--black);
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    /* background blob */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -20%; left: -10%;
+      width: 60vw; height: 60vw;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,75,168,0.25) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative; z-index: 1;
+      width: min(680px, 100%);
+    }
+
+    /* Header */
+    .header {
+      margin-bottom: 40px;
+      animation: fadeUp 0.6s both;
+    }
+
+    .brand {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .brand-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      display: grid; place-items: center;
+    }
+
+    .brand-icon svg { width: 20px; height: 20px; }
+
+    .brand-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* Section */
+    .section {
+      margin-bottom: 28px;
+      animation: fadeUp 0.6s both;
+    }
+    .section:nth-child(2) { animation-delay: 0.1s; }
+    .section:nth-child(3) { animation-delay: 0.2s; }
+    .section:nth-child(4) { animation-delay: 0.3s; }
+
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--cerulean);
+      margin-bottom: 10px;
+      padding-left: 4px;
+    }
+
+    /* File list */
+    .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      text-decoration: none;
+      color: #fff;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      cursor: pointer;
+    }
+
+    .file-item:hover {
+      background: rgba(62,120,178,0.1);
+      border-color: rgba(62,120,178,0.3);
+      transform: translateX(4px);
+    }
+
+    .file-item.disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .file-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: grid; place-items: center;
+      flex-shrink: 0;
+      font-size: 0.7rem;
+      font-family: 'DM Mono', monospace;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+
+    .file-icon.php  { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.2); }
+    .file-icon.css  { background: rgba(62,120,178,0.15); color: #60a5fa; border: 1px solid rgba(62,120,178,0.2); }
+    .file-icon.sql  { background: rgba(16,185,129,0.12); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.2); }
+    .file-icon.htc  { background: rgba(245,158,11,0.12); color: #fcd34d; border: 1px solid rgba(245,158,11,0.2); }
+
+    .file-info { flex: 1; }
+
+    .file-name {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.88rem;
+      font-weight: 500;
+      margin-bottom: 3px;
+    }
+
+    .file-desc {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.35);
+    }
+
+    .file-arrow {
+      color: rgba(255,255,255,0.2);
+      font-size: 1rem;
+      transition: color 0.2s;
+    }
+    .file-item:hover .file-arrow { color: var(--cerulean); }
+
+    /* Footer */
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.2);
+      animation: fadeUp 0.6s 0.4s both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <span class="brand-name">Nexus</span>
+      </div>
+      <h1>File del progetto</h1>
+      <p>Naviga tra tutti i file che compongono il sito.</p>
+    </div>
+
+    <!-- PAGINE -->
+    <div class="section">
+      <div class="section-title">Pagine</div>
+      <div class="file-list">
+
+        <a href="login.php" class="file-item">
+          <div class="file-icon php">.php</div>
+          <div class="file-info">
+            <div class="file-name">login.php</div>
+            <div class="file-desc">Pagina di accesso — form login con logica PHP</div>
+          </div>
+          <span class="file-arrow">→</span>
+        </a>
+
+        <a href="dashboard.php" class="file-item">
+          <div class="file-icon php">.php</div>
+          <div class="file-info">
+            <div class="file-name">dashboard.php</div>
+            <div class="file-desc">Area protetta — richiede autenticazione</div>
+          </div>
+          <span class="file-arrow">→</span>
+        </a>
+
+        <a href="logout.php" class="file-item">
+          <div class="file-icon php">.php</div>
+          <div class="file-info">
+            <div class="file-name">logout.php</div>
+            <div class="file-desc">Distrugge la sessione e reindirizza al login</div>
+          </div>
+          <span class="file-arrow">→</span>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- STILE -->
+    <div class="section">
+      <div class="section-title">Stile</div>
+      <div class="file-list">
+
+        <a href="login.css" class="file-item">
+          <div class="file-icon css">.css</div>
+          <div class="file-info">
+            <div class="file-name">login.css</div>
+            <div class="file-desc">Foglio di stile della pagina di login</div>
+          </div>
+          <span class="file-arrow">→</span>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- BACKEND -->
+    <div class="section">
+      <div class="section-title">Backend — non accessibili direttamente</div>
+      <div class="file-list">
+
+        <div class="file-item disabled">
+          <div class="file-icon php">.php</div>
+          <div class="file-info">
+            <div class="file-name">config.php</div>
+            <div class="file-desc">Credenziali DB e costanti — protetto da .htaccess</div>
+          </div>
+          <span class="file-arrow">🔒</span>
+        </div>
+
+        <div class="file-item disabled">
+          <div class="file-icon php">.php</div>
+          <div class="file-info">
+            <div class="file-name">db.php</div>
+            <div class="file-desc">Connessione PDO al database — protetto da .htaccess</div>
+          </div>
+          <span class="file-arrow">🔒</span>
+        </div>
+
+        <div class="file-item disabled">
+          <div class="file-icon php">.php</div>
+          <div class="file-info">
+            <div class="file-name">auth.php</div>
+            <div class="file-desc">Logica autenticazione, sessioni, brute-force — protetto da .htaccess</div>
+          </div>
+          <span class="file-arrow">🔒</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DATABASE -->
+    <div class="section">
+      <div class="section-title">Database & Configurazione</div>
+      <div class="file-list">
+
+        <a href="database.sql" class="file-item">
+          <div class="file-icon sql">.sql</div>
+          <div class="file-info">
+            <div class="file-name">database.sql</div>
+            <div class="file-desc">Schema del database — importa in phpMyAdmin</div>
+          </div>
+          <span class="file-arrow">→</span>
+        </a>
+
+        <a href=".htaccess" class="file-item">
+          <div class="file-icon htc">.htc</div>
+          <div class="file-info">
+            <div class="file-name">.htaccess</div>
+            <div class="file-desc">Regole Apache — sicurezza, HTTPS, blocco file</div>
+          </div>
+          <span class="file-arrow">→</span>
+        </a>
+
+      </div>
+    </div>
+
+    <div class="footer">Nexus Project — nexus-music.xo.je</div>
+
+  </div>
+</body>
+</html>
